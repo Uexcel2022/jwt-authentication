@@ -1,4 +1,4 @@
-package com.uexcel.jwt.dto.exception;
+package com.uexcel.jwt.exception;
 
 import lombok.Getter;
 
