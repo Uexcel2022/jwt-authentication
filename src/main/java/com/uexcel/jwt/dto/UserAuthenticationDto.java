@@ -1,5 +1,6 @@
 package com.uexcel.jwt.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -14,6 +15,9 @@ public class UserAuthenticationDto {
     @NotEmpty(message = "Last name is required.")
     @NotNull(message = "Last name is required.")
     private String lastName;
+    @NotEmpty(message = "email is required.")
+    @NotNull(message = "email is required.")
+    @Email(message = "please a valid email address")
     private String email;
     @NotEmpty(message = "Password is required.")
     @NotNull(message = "Password is required.")
