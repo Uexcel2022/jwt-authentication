@@ -1,17 +1,19 @@
 package com.uexcel.jwt.service;
 
-import com.uexcel.jwt.dto.LoginDto;
-import com.uexcel.jwt.dto.ResponseDto;
-import com.uexcel.jwt.dto.UserAuthenticationDto;
-import com.uexcel.jwt.dto.UserTokenDto;
+import com.uexcel.jwt.dto.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public interface IUserAuthenticationService {
+
     ResponseDto register(UserAuthenticationDto userAuthenticationDto);
 
-    UserTokenDto authenticate(LoginDto loginDto);
+    AccessTokenDto authenticate(LoginDto loginDto);
+
+    UserResponseDto fetchUserByEmail(String email);
+
+    ResponseDto updateUser(UserBaseDto baseDto);
 
 
     static String getTime(){
