@@ -33,7 +33,7 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
                     400,HttpStatus.BAD_REQUEST,"Input UserAuthenticationDto is null");
         }
 
-        if(uAR.existsByEmail(userAD.getEmail())){
+        if(uAR.existsByEmailIgnoreCase(userAD.getEmail())){
             throw new AppExceptions(
                     400,HttpStatus.BAD_REQUEST,
                     String.format("The email address %s has been used.",userAD.getEmail()));
