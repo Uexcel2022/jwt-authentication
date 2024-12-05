@@ -1,6 +1,7 @@
 package com.uexcel.jwt.audit;
 
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -8,6 +9,9 @@ import java.util.Optional;
 public class AuditorAwareImpl implements AuditorAware<String> {
     @Override
     public Optional<String> getCurrentAuditor() {
-        return Optional.of("Anonymous User");
+        if(SecurityContextHolder.getContext().getAuthentication() == null) {
+            return Optional.of("Anonymous User");
+        }
+        return Optional.of(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 }
