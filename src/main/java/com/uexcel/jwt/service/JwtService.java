@@ -15,7 +15,6 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-
     @Value("${key}")
   private String SECRET_KEY;
 
@@ -30,7 +29,6 @@ public class JwtService {
     }
 
     private SecretKey getSignKey() {
-
         byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
