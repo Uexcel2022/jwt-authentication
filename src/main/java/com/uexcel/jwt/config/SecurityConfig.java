@@ -30,7 +30,7 @@ public class SecurityConfig {
                        .requestMatchers("/h2-console/**").permitAll()
                        .requestMatchers("/swagger-ui/**","/v3/api-doc*/**").permitAll()
                        .requestMatchers("/api/create").permitAll()
-                       .requestMatchers("/api/login").permitAll()
+                       .requestMatchers("/api/login","/error").permitAll()
                        .anyRequest().authenticated()
                )
                .headers(h->h.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
