@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             }
         }catch (Exception exception){
-            errorResponse(response,"Invalid or expired token. Please sign in again.");
+            errorResponse(response,"Bad token. Please sign in again.");
         }
 
 

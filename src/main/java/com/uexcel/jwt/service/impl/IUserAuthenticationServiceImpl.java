@@ -13,16 +13,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
 public class IUserAuthenticationServiceImpl implements IUserAuthenticationService {
     private final UserMapper userMapper;
-    private UserAuthenticationRepository uAR;
-    private BCryptPasswordEncoder bPE;
+    private final UserAuthenticationRepository uAR;
+    private final PasswordEncoder passwordEncoder;
+    private final CompromisedPasswordChecker compromisedPasswordChecker;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final Logger logger = LoggerFactory.getLogger(IUserAuthenticationServiceImpl.class);
@@ -30,7 +32,12 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
     public ResponseDto register(UserAuthenticationDto userAD) {
         if(userAD == null){
             throw new AppExceptions(
-                    400,HttpStatus.BAD_REQUEST,"Input UserAuthenticationDto is null");
+                    400,HttpStatus.BAD_REQUEST,"Input UserAuthenticationDto is null.");
+        }
+
+        if(compromisedPasswordChecker.check(userAD.getPassword()).isCompromised()){
+            throw new AppExceptions(400,HttpStatus.BAD_REQUEST,
+                    String.format("Password %s is compromised.",userAD.getPassword()));
         }
 
         if(uAR.existsByEmailIgnoreCase(userAD.getEmail())){
@@ -41,9 +48,9 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
 
         if(userAD.getPassword()!=null && !userAD.getPassword().equals(userAD.getConfirmPassword())){
             throw new AppExceptions(
-                    400,HttpStatus.BAD_REQUEST,"Password and ConfirmPassword not matched");
+                    400,HttpStatus.BAD_REQUEST,"Password and ConfirmPassword not matched.");
         }
-            userAD.setPassword(bPE.encode(userAD.getPassword()));
+            userAD.setPassword(passwordEncoder.encode(userAD.getPassword()));
             uAR.save(userMapper.mapToUser(userAD,new UserAuthentication()));
 
             return new ResponseDto(null,201,HttpStatus.CREATED,
@@ -52,20 +59,18 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
 
     @Override
     public AccessTokenDto authenticate(LoginDto loginDto) {
-        if(loginDto == null){
             if(loginDto == null){
                 throw new AppExceptions(
-                        400,HttpStatus.BAD_REQUEST,"Input UserAuthenticationDto is null");
+                        400,HttpStatus.BAD_REQUEST,"Input UserAuthenticationDto is null.");
             }
-        }
 
         UserAuthentication uAT = uAR.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new AppExceptions(
-                        400,HttpStatus.BAD_REQUEST,"Bad credentials"));
+                        400,HttpStatus.BAD_REQUEST,"Bad credentials."));
 
-        if(!bPE.matches(loginDto.getPassword(),uAT.getPassword())){
+        if(!passwordEncoder.matches(loginDto.getPassword(),uAT.getPassword())){
             throw new AppExceptions(
-                    400,HttpStatus.BAD_REQUEST,"Bad credentials");
+                    400,HttpStatus.BAD_REQUEST,"Bad credentials.");
         }
 
         authenticationManager
@@ -98,7 +103,7 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
             logger.debug("Security breech attempt by username: {}", userEmail);
            throw  new AppExceptions(
                     401,HttpStatus.UNAUTHORIZED,
-                    "You are not allowed to access this resource");
+                    "You are not allowed to access this resource.");
         }
 
         return userMapper.mapToUserDto(uA,new UserResponseDto());
