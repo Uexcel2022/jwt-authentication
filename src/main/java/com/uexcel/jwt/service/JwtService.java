@@ -1,66 +1,37 @@
 package com.uexcel.jwt.service;
 
-import com.uexcel.jwt.entity.UserAuthentication;
-import io.jsonwebtoken.Claims;
+import com.uexcel.jwt.constant.AppConstants;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
+import org.springframework.core.env.Environment;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
-@Service
+
 public class JwtService {
-    @Value("${key}")
-  private String SECRET_KEY;
 
-    public String generateJwtToken(UserAuthentication userAuthentication) {
-        return Jwts
-                .builder()
-                .subject(userAuthentication.getEmail())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+24*60*60*1000))
-                .signWith(getSignKey())
-                .compact();
-    }
+   public static String generateToken (Authentication auth, Environment env) {
 
-    private SecretKey getSignKey() {
-        byte[] keyBytes = Decoders.BASE64URL.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
+       if (env != null) {
+           String secret = env.getProperty(AppConstants.JWT_SECRET_KEY, AppConstants.JWT_DEFAULT_KEY);
+           SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+           String JWT = Jwts.builder().issuer(AppConstants.JWT_ISSUER).subject(AppConstants.SUBJECT)
+                   .claim("username", auth.getName())
+                   .claim("authorities", auth.getAuthorities().stream()
+                           .map(GrantedAuthority::getAuthority)
+                           .collect(Collectors.joining(","))
+                   )
+                   .issuedAt(new Date(System.currentTimeMillis()))
+                   .expiration(new Date(System.currentTimeMillis() + 30000000))
+                   .signWith(secretKey).compact();
+           return JWT;
+       }
+       return null;
+   }
 
-
-    private Claims extractClaims(String token) {
-        return Jwts
-                .parser()
-                .verifyWith(getSignKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    public <T> T getClaim(String token, Function<Claims, T> claimsResolver) {
-        return claimsResolver.apply(extractClaims(token));
-    }
-
-    public String extractUsername(String token) {
-        return getClaim(token, Claims::getSubject);
-    }
-
-    public Boolean isValid(String token, UserDetails userDetails) {
-            String username = extractUsername(token);
-            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaims(token).getExpiration();
-    }
 }

@@ -15,7 +15,7 @@ roles:
   user: USER
   admin: ADMIN
 
-key: ${SECURITY_KEY:295206998413d3296653b590de7d8db835d7d082e6130a718b435dde63ea5298}
+#key: ${SECURITY_KEY:295206998413d3296653b590de7d8db835d7d082e6130a718b435dde63ea5298}
 logging:
   level:
     com:

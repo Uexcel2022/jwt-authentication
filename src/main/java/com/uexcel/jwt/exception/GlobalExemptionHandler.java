@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -42,17 +44,32 @@ public class GlobalExemptionHandler extends ResponseEntityExceptionHandler {
 
     }
     @ExceptionHandler(AppExceptions.class)
-    public ResponseEntity<ResponseDto> handleAppExceptions(AppExceptions ex, WebRequest request){
+    public ResponseEntity<ResponseDto> handleExceptions(AppExceptions ex, WebRequest request){
      return  ResponseEntity.status(ex.getStatus()).body(
                 new ResponseDto(getTime(),ex.getStatus(),
                         ex.getDescription(),ex.getMessage(),request.getDescription(false))
         );
     }
 
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ResponseDto> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request){
+        return  ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(
+                new ResponseDto(getTime(),HttpStatus.NOT_FOUND.value(),
+                        HttpStatus.NOT_FOUND,ex.getMessage(),request.getDescription(false))
+        );
+    }
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ResponseDto> handleBadCredentialsException(BadCredentialsException ex, WebRequest request){
+        return  ResponseEntity.status(HttpStatus.UNAUTHORIZED.value()).body(
+                new ResponseDto(getTime(),HttpStatus.UNAUTHORIZED.value(),
+                        HttpStatus.UNAUTHORIZED,ex.getMessage(),request.getDescription(false))
+        );
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResponseDto> handleAppExceptions(Exception ex, WebRequest request){
+    public ResponseEntity<ResponseDto> handleExceptions(Exception ex, WebRequest request){
         logger.debug(ex.getMessage(), ex);
-        return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+        return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(
                 new ResponseDto(getTime(),500,
                         HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage(), request.getDescription(false))
         );

@@ -1,6 +1,6 @@
 package com.uexcel.jwt.Repository;
 
-import com.uexcel.jwt.entity.UserAuthentication;
+import com.uexcel.jwt.model.UserAuthentication;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

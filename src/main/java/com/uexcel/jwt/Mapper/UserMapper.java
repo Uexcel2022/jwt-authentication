@@ -2,7 +2,7 @@ package com.uexcel.jwt.Mapper;
 
 import com.uexcel.jwt.dto.UserAuthenticationDto;
 import com.uexcel.jwt.dto.UserResponseDto;
-import com.uexcel.jwt.entity.UserAuthentication;
+import com.uexcel.jwt.model.UserAuthentication;
 import com.uexcel.jwt.role.Role;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

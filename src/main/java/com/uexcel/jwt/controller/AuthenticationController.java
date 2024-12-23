@@ -102,7 +102,7 @@ public class AuthenticationController {
 
 
     @GetMapping("/get-user")
-    public ResponseEntity<UserResponseDto> fetchUser(@RequestParam(required = false) String email) {
+    public ResponseEntity<UserResponseDto> fetchUser(@RequestParam String email) {
         UserResponseDto uRD = userAS.fetchUserByEmail(email);
         return ResponseEntity.ok().body(uRD);
     }

@@ -1,4 +1,4 @@
-package com.uexcel.jwt.entity;
+package com.uexcel.jwt.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

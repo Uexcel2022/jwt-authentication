@@ -3,17 +3,19 @@ package com.uexcel.jwt.service.impl;
 import com.uexcel.jwt.Mapper.UserMapper;
 import com.uexcel.jwt.Repository.UserAuthenticationRepository;
 import com.uexcel.jwt.dto.*;
-import com.uexcel.jwt.entity.UserAuthentication;
 import com.uexcel.jwt.exception.AppExceptions;
+import com.uexcel.jwt.model.UserAuthentication;
 import com.uexcel.jwt.service.IUserAuthenticationService;
 import com.uexcel.jwt.service.JwtService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,8 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
     private final UserAuthenticationRepository uAR;
     private final PasswordEncoder passwordEncoder;
     private final CompromisedPasswordChecker compromisedPasswordChecker;
-    private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final Environment env;
     private final Logger logger = LoggerFactory.getLogger(IUserAuthenticationServiceImpl.class);
     @Override
     public ResponseDto register(UserAuthenticationDto userAD) {
@@ -59,26 +61,17 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
 
     @Override
     public AccessTokenDto authenticate(LoginDto loginDto) {
-            if(loginDto == null){
-                throw new AppExceptions(
-                        400,HttpStatus.BAD_REQUEST,"Input UserAuthenticationDto is null.");
+          UsernamePasswordAuthenticationToken username =   UsernamePasswordAuthenticationToken
+                  .unauthenticated(loginDto.getEmail(), loginDto.getPassword());
+            Authentication authentication = authenticationManager.authenticate(username);
+            if(authentication != null || authentication.isAuthenticated()){
+                String JWT = JwtService.generateToken(authentication, env);
+                return new AccessTokenDto(HttpStatus.OK.value(), JWT);
+            }else {
+
+                throw new AppExceptions(HttpStatus.UNAUTHORIZED.value(),
+                        HttpStatus.UNAUTHORIZED, "Authentication failed.");
             }
-
-        UserAuthentication uAT = uAR.findByEmail(loginDto.getEmail())
-                .orElseThrow(() -> new AppExceptions(
-                        400,HttpStatus.BAD_REQUEST,"Bad credentials."));
-
-        if(!passwordEncoder.matches(loginDto.getPassword(),uAT.getPassword())){
-            throw new AppExceptions(
-                    400,HttpStatus.BAD_REQUEST,"Bad credentials.");
-        }
-
-        authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
-
-        String token = jwtService.generateJwtToken(uAT);
-
-        return new AccessTokenDto(token);
     }
 
     @Override
