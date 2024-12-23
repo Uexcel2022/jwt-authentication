@@ -1,5 +1,6 @@
 package com.uexcel.jwt.controller;
 
+import com.uexcel.jwt.constant.AppConstants;
 import com.uexcel.jwt.dto.*;
 import com.uexcel.jwt.service.IUserAuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,7 +71,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<AccessTokenDto> authenticate(@Valid @RequestBody LoginDto loginDto) {
         AccessTokenDto resp = userAS.authenticate(loginDto);
-        return ResponseEntity.ok().body(resp);
+        return ResponseEntity.ok().header(AppConstants.HEADER,resp.token()).body(resp);
     }
 
     @Operation(
@@ -98,8 +99,6 @@ public class AuthenticationController {
                     )
             }
     )
-
-
 
     @GetMapping("/get-user")
     public ResponseEntity<UserResponseDto> fetchUser(@RequestParam String email) {
