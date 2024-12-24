@@ -30,6 +30,8 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
     private final AuthenticationManager authenticationManager;
     private final Environment env;
     private final Logger logger = LoggerFactory.getLogger(IUserAuthenticationServiceImpl.class);
+    private final UserAuthenticationRepository uARepository;
+
     @Override
     public ResponseDto register(UserAuthenticationDto userAD) {
         if(userAD == null){
@@ -65,7 +67,7 @@ public class IUserAuthenticationServiceImpl implements IUserAuthenticationServic
                   .unauthenticated(loginDto.getEmail(), loginDto.getPassword());
             Authentication authentication = authenticationManager.authenticate(username);
             if(authentication != null || authentication.isAuthenticated()){
-                String JWT = JwtService.generateToken(authentication, env);
+                String JWT = JwtService.generateToken(authentication, env, uARepository);
                 return new AccessTokenDto(HttpStatus.OK.value(), JWT);
             }else {
 
